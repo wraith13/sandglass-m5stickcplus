@@ -1,7 +1,17 @@
 # sandglass for M5StickC Plus
 
+## features
+
+- software sanglass
+- timer preset: 30s, 1m, 1m30s, 2m, 3m, 5m, 10m, 15m, 30m, 60m
+- battery gauge
+- auto power off
+- repeat mode
+- mute mode
+
 ## requirements
 
+- [M5StickC Plus](https://docs.m5stack.com/en/core/m5stickc_plus)
 - [Arduino IDE](https://www.arduino.cc/en/software)
 - [VCP Drivers](https://ftdichip.com/drivers/vcp-drivers/)
 - [Visual Studio Code](https://code.visualstudio.com/)
@@ -28,14 +38,14 @@
 
 |button|description|
 |---|---|
-|main|Change timer|
-|left side(power off)|Power on|
-|left side( < 1s)|Reset to top|
-|left side( < 4s)|Reset to bottom|
-|left side( >= 4s)|Power off|
-|right siede|Change mode|
+|main|change timer|
+|left side(power off)|power on|
+|left side( < 1s)|reset to top|
+|left side( < 4s)|reset to bottom|
+|left side( >= 4s)|power off|
+|right siede|change mode|
 
-### battery bar
+### battery gauge
 
 |color|description|
 |---|---|
@@ -48,8 +58,25 @@
 
 |mode|description|
 |---|---|
-|R|Repeat|
-|M|Mute|
+|R|repeat|
+|M|mute|
+
+### timer preset
+
+|timer|color|
+|---|---|
+|30s|blue|
+|1m|red|
+|1m30s|green|
+|2m|cyan|
+|3m|magenta|
+|5m|yellow|
+|10m|orange|
+|15m|green yellow|
+|30m|pink|
+|60m|white|
+
+You can edit timer preset in [`config.h`](./config.h).
 
 ## License
 
