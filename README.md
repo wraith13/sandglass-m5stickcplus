@@ -1,5 +1,7 @@
 # sandglass for M5StickC Plus
 
+![image](https://user-images.githubusercontent.com/645907/173222306-3b8348a4-ee0d-4407-831d-d796709369be.png)
+
 ## features
 
 - software sanglass
