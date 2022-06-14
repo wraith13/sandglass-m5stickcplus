@@ -13,7 +13,7 @@
 
 ## requirements
 
-- [M5StickC Plus](https://docs.m5stack.com/en/core/m5stickc_plus)
+- [M5StickC Plus ( K016-P )](https://docs.m5stack.com/en/core/m5stickc_plus)
 - [Arduino IDE](https://www.arduino.cc/en/software)
 - [VCP Drivers](https://ftdichip.com/drivers/vcp-drivers/)
 - [Visual Studio Code](https://code.visualstudio.com/)
@@ -53,8 +53,8 @@
 |---|---|
 |blue|changing|
 |green|normal|
-|yellow|Low battery|
-|red|Almost empty battery|
+|yellow|low battery|
+|red|almost empty battery|
 
 ### mode
 
