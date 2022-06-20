@@ -15,23 +15,44 @@ template<class valueT> valueT square(valueT value)
     return value * value;
 }
 typedef int rotate_type;
-namespace beep
+namespace notification
 {
-    void tri()
+    void initialize()
+    {
+        pinMode(config::led_pin_number, OUTPUT);
+    }
+    void on(bool mute)
+    {
+        if ( ! mute)
+        {
+            M5.Beep.beep();
+        }
+        digitalWrite(config::led_pin_number, LOW);
+    }
+    void off(bool mute)
+    {
+        M5.Beep.mute();
+        digitalWrite(config::led_pin_number, HIGH);
+    }
+    void tri(bool mute)
     {
         M5.Beep.setVolume(6);
-        M5.Beep.beep(); delay(100);
-        M5.Beep.mute(); delay(100);
-        M5.Beep.beep(); delay(100);
-        M5.Beep.mute(); delay(100);
-        M5.Beep.beep(); delay(100);
-        M5.Beep.mute();
+                    on(mute);
+        delay(100); off(mute);
+        delay(100); on(mute);
+        delay(100); off(mute);
+        delay(100); on(mute);
+        delay(100); off(mute);
     }
-    void single()
+    void single(bool mute)
     {
-        M5.Beep.setVolume(3);
-        M5.Beep.beep(); delay(100);
-        M5.Beep.mute();
+        if ( ! mute)
+        {
+            M5.Beep.setVolume(3);
+            M5.Beep.beep();
+            delay(100);
+            M5.Beep.mute();
+        }
     }
 }
 namespace battery_state
@@ -1020,7 +1041,8 @@ void setup()
     //M5.Beep.begin();
     save_battery::initialize();
     state::initialize();
-    beep::single();
+    notification::initialize();
+    notification::single(stored_mode.mute);
 }
 void loop()
 {
@@ -1044,13 +1066,13 @@ void loop()
         state::reset_to_top();
         break;
     }
-    if (beep && ! stored_mode.mute)
+    if (beep)
     {
-        beep::single();
+        notification::single(stored_mode.mute);
     }
-    if (state::update() && ! beep && ! stored_mode.mute)
+    if (state::update() && ! beep)
     {
-        beep::tri();
+        notification::tri(stored_mode.mute);
     }
     M5.update();
     M5.Beep.update();
