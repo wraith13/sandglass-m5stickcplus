@@ -20,6 +20,7 @@ namespace notification
     void initialize()
     {
         pinMode(config::led_pin_number, OUTPUT);
+        digitalWrite(config::led_pin_number, HIGH);
     }
     void on(bool mute)
     {
