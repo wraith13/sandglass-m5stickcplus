@@ -29,6 +29,6 @@ namespace config
     const float move_threshold = 0.1;
     const tick_type falling_sand_step_unit = 25;
     const auto falling_sand_pattern = ". .. . ... .. ... . ... .. .. . ... .. ... . ... .. . . ... .. ... . .. . ... .. .. . . .. . ... ";
-    const uint8_t led_pin_number = GPIO_NUM_10;
+    const uint8_t led_pin_number = M5_LED; // == GPIO_NUM_10;
 }
 #endif
