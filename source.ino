@@ -17,43 +17,149 @@ template<class valueT> valueT square(valueT value)
 typedef int rotate_type;
 namespace notification
 {
+    void (*updator)(tick_type, bool) = nullptr;
+    tick_type start_at = 0;
+    bool beeped = false;
+    bool flashed = false;
+    bool is_active()
+    {
+        return nullptr != updator;
+    }
     void initialize()
     {
         pinMode(config::led_pin_number, OUTPUT);
         digitalWrite(config::led_pin_number, HIGH);
     }
-    void on(bool mute)
+    void set(void (*a_updator)(tick_type, bool))
     {
-        if ( ! mute)
+        updator = a_updator;
+        start_at = millis();
+    }
+    void update(bool mute)
+    {
+        if (is_active())
         {
+            updator(millis() -start_at, mute);
+        }
+    }
+    void beep_on()
+    {
+        if ( ! beeped)
+        {
+            beeped = true;
             M5.Beep.beep();
         }
-        digitalWrite(config::led_pin_number, LOW);
     }
-    void off(bool mute)
-    {
-        M5.Beep.mute();
-        digitalWrite(config::led_pin_number, HIGH);
-    }
-    void tri(bool mute)
-    {
-        M5.Beep.setVolume(6);
-                    on(mute);
-        delay(100); off(mute);
-        delay(100); on(mute);
-        delay(100); off(mute);
-        delay(100); on(mute);
-        delay(100); off(mute);
-    }
-    void single(bool mute)
+    void beep_on(bool mute)
     {
         if ( ! mute)
         {
-            M5.Beep.setVolume(3);
-            M5.Beep.beep();
-            delay(100);
+            beep_on();
+        }
+    }
+    void beep_off()
+    {
+        if (beeped)
+        {
+            beeped = false;
             M5.Beep.mute();
         }
+    }
+    void led_on()
+    {
+        if ( ! flashed)
+        {
+            flashed = true;
+            digitalWrite(config::led_pin_number, LOW);
+        }
+    }
+    void led_off()
+    {
+        if (flashed)
+        {
+            flashed = false;
+            digitalWrite(config::led_pin_number, HIGH);
+        }
+    }
+    void off()
+    {
+        beep_off();
+        led_off();
+    }
+    void clear()
+    {
+        updator = nullptr;
+        off();
+    }
+    void first_updator(tick_type tick, bool mute)
+    {
+        int step = tick /100;
+        switch(step)
+        {
+        case 0:
+            // 最初の一発目は絶対に鳴ってくれないっぽいので、ダミーの Beep を１回挟む。
+            beep_on(mute);
+            break;
+        case 1:
+            off();
+            break;
+        case 2:
+            beep_on(mute);
+            led_on();
+            break;
+        default:
+            clear();
+            break;
+        }
+    }
+    void single_updator(tick_type tick, bool mute)
+    {
+        int step = tick /100;
+        switch(step)
+        {
+        case 0:
+            beep_on(mute);
+            // led_on(); ここで光ってもウザいだけなので、光らせない。
+            break;
+        default:
+            clear();
+            break;
+        }
+    }
+    void tri_updator(tick_type tick, bool mute)
+    {
+        int step = tick /100;
+        switch(step)
+        {
+        case 0:
+        case 2:
+        case 4:
+            beep_on(mute);
+            led_on();
+            break;
+        case 1:
+        case 3:
+            off();
+            break;
+        default:
+            clear();
+            break;
+        }
+    }
+    void first()
+    {
+        M5.Beep.setVolume(3);
+        set(first_updator);
+    }
+    void single()
+    {
+        M5.Beep.setVolume(3);
+        set(single_updator);
+    }
+    void tri()
+    {
+        M5.Beep.setVolume(6);
+        set(tri_updator);
     }
 }
 namespace battery_state
@@ -123,26 +229,42 @@ namespace rotate
 }
 namespace save_battery
 {
-    bool is_lazy;
-    void set_brisk()
+    enum power_mode
     {
-        is_lazy = false;
-        setCpuFrequencyMhz(config::brisk_cpu_frequency_mhz);
-        M5.Axp.ScreenBreath(config::brisk_screen_breath);
-    }
-    void set_lazy()
+        power_mode_none,
+        power_mode_lazy,
+        power_mode_brisk,
+        power_mode_turbo,
+    };
+    power_mode current_power_mode = power_mode_none;
+    void set(power_mode new_power_mode)
     {
-        is_lazy = true;
-        setCpuFrequencyMhz(config::lazy_cpu_frequency_bhz);
-        M5.Axp.ScreenBreath(config::lazy_screen_breath);
+        if (new_power_mode != current_power_mode)
+        {
+            current_power_mode = new_power_mode;
+            switch(current_power_mode)
+            {
+            case power_mode_turbo:
+                setCpuFrequencyMhz(config::max_cpu_frequency_mhz);
+                break;
+            case power_mode_brisk:
+                setCpuFrequencyMhz(config::brisk_cpu_frequency_mhz);
+                M5.Axp.ScreenBreath(config::brisk_screen_breath);
+                break;
+            case power_mode_lazy:
+                setCpuFrequencyMhz(config::lazy_cpu_frequency_bhz);
+                M5.Axp.ScreenBreath(config::lazy_screen_breath);
+                break;
+            }
+        }
     }
     void initialize()
     {
-        set_brisk(); // 省電力の為に LCD の明るさを落とす。
+        set(power_mode_brisk);
     }
     tick_type last_moving_at;
     tick_type last_falling_at;
-    void loop(bool is_moving, bool is_falling)
+    void update(bool is_moving, bool is_falling, bool turbo)
     {
         tick_type now = millis();
         if (is_moving)
@@ -157,19 +279,18 @@ namespace save_battery
         {
             M5.Axp.PowerOff();
         }
+        if (turbo)
+        {
+            set(power_mode_turbo);
+        }
+        else
         if (config::lazy_suspend_tick < now -last_moving_at)
         {
-            if ( ! is_lazy)
-            {
-                set_lazy();
-            }
+            set(power_mode_lazy);
         }
         else
         {
-            if (is_lazy)
-            {
-                set_brisk();
-            }
+            set(power_mode_brisk);
         }
     }
 }
@@ -994,7 +1115,7 @@ namespace state
         const tick_type previous_origin_top_volume = last_origin_top_volume;
         bool beep = update_tick(now, rotate);
         bool is_falling = previous_origin_top_volume != last_origin_top_volume; // 正確な判定ではないが、現在の実用上、これで問題ない。
-        save_battery::loop(is_moving || beep, is_falling);
+        save_battery::update(is_moving || beep, is_falling, notification::is_active());
         int step = (now -last_rotate_at) /config::falling_sand_step_unit;
         bool isReverse = false;
         render::sand_direction_type direction;
@@ -1043,7 +1164,7 @@ void setup()
     save_battery::initialize();
     state::initialize();
     notification::initialize();
-    notification::single(stored_mode.mute);
+    notification::first();
 }
 void loop()
 {
@@ -1062,19 +1183,22 @@ void loop()
     {
     case 1:
         state::reset_to_bottom();
+        beep = true;
         break;
     case 2:
         state::reset_to_top();
+        beep = true;
         break;
     }
     if (beep)
     {
-        notification::single(stored_mode.mute);
+        notification::single();
     }
     if (state::update() && ! beep)
     {
-        notification::tri(stored_mode.mute);
+        notification::tri();
     }
+    notification::update(stored_mode.mute);
     M5.update();
     M5.Beep.update();
     delay(1); // これだけで節電効果がある一方で、数値をデカくしてもあんまり効果は無いらしい。

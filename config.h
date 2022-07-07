@@ -20,6 +20,7 @@ namespace config
     const preset_entry default_entry = preset[4];
     const float max_voltage = 4.2f;
     const float min_voltage = 3.0f;
+    const int max_cpu_frequency_mhz = 240;
     const int brisk_cpu_frequency_mhz = 40;
     const int brisk_screen_breath = 9;
     const int lazy_cpu_frequency_bhz = 20;
