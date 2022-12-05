@@ -1,4 +1,5 @@
-#include <M5StickCPlus.h>
+#include <M5StickCPlus.h> // Arduino/libraries/M5StickCPlus/src
+#include <Preferences.h> // Arduino15/packages/esp32/hardware/esp32/2.0.2/libraries/Preferences/src
 #include <string>
 #include <algorithm>
 #include <vector>
@@ -294,6 +295,7 @@ namespace save_battery
         }
     }
 }
+Preferences preferences;
 struct mode_type
 {
     typedef mode_type this_type;
@@ -319,12 +321,22 @@ struct mode_type
     }
     this_type & save()
     {
-        // Not implemented.
+        preferences.begin("sandglass-mode");
+        preferences.putULong("size", size);
+        preferences.putInt("color", color);
+        preferences.putBool("mute", mute);
+        preferences.putBool("repeat", repeat);
+        preferences.end();
         return *this;
     }
     this_type & load()
     {
-        // Not implemented.
+        preferences.begin("sandglass-mode", true);
+        size = preferences.getULong("size", size);
+        color = preferences.getInt("color", color);
+        mute = preferences.getBool("mute", mute);
+        repeat = preferences.getBool("repeat", repeat);
+        preferences.end();
         return *this;
     }
     this_type & set_size(tick_type size)
