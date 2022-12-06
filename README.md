@@ -51,7 +51,7 @@
 
 |color|description|
 |---|---|
-|blue|changing|
+|blue|charging ( gyro off )|
 |green|normal|
 |yellow|low battery|
 |red|almost empty battery|

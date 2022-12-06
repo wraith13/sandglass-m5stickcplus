@@ -200,6 +200,10 @@ namespace rotate
         }
         rotate_type get_rotate(rotate_type last_rotate)
         {
+            if (battery_state::is_charging())
+            {
+                return 0;
+            }
             const float delta = 0.2;
             if (-delta < x && x <= delta && -delta < y && y <= delta)
             {
