@@ -889,7 +889,9 @@ namespace render
         if
         (
             previous_screen_params::step != step ||
-            previous_screen_params::direction != direction
+            previous_screen_params::direction != direction ||
+            (previous_screen_params::rest_time != rest_time && 0 == rest_time) ||
+            (previous_screen_params::elapsed_time != elapsed_time && 0 == elapsed_time)
         )
         {
             result |= zone_sand;
